@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CP_CORRELACION</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Herramientas CP</p>
+        <h1>CP_CORRELACION</h1>
+        <p class="subtitle">Correlación dinámica entre variables definidas en <strong>se_name_mod</strong>, con agrupamientos, emparejamiento y Excel descargable.</p>
+      </div>
+      <div class="status-card">
+        <span class="dot"></span>
+        <span id="apiStatus">Backend no verificado</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <span>1</span>
+        <h2>Pegá tu tabla</h2>
+      </div>
+      <p class="hint">Copiá desde Excel o CSV. La única columna fija esperada es <code>se_name_mod</code>, donde aparecen las variables como Fitotoxicidad, Rendimiento, etc.</p>
+      <textarea id="dataInput" placeholder="Pegá acá tu tabla..."></textarea>
+      <div class="actions">
+        <button id="parseBtn" class="primary">Detectar columnas</button>
+        <button id="clearBtn" class="ghost">Limpiar</button>
+      </div>
+      <div id="dataPreview" class="preview"></div>
+    </section>
+
+    <section id="configPanel" class="card hidden">
+      <div class="section-title">
+        <span>2</span>
+        <h2>Configuración del análisis</h2>
+      </div>
+
+      <div class="grid two">
+        <label>
+          Columna de variables
+          <select id="seCol"></select>
+        </label>
+        <label>
+          Columna de valores
+          <select id="valueCol"></select>
+        </label>
+      </div>
+
+      <div class="grid two">
+        <label>
+          Variable 1 / X
+          <select id="varX"></select>
+        </label>
+        <label>
+          Variable 2 / Y
+          <select id="varY"></select>
+        </label>
+      </div>
+
+      <div class="grid three">
+        <label>
+          Método
+          <select id="method">
+            <option value="pearson">Pearson</option>
+            <option value="spearman">Spearman</option>
+          </select>
+        </label>
+        <label>
+          Agregación si hay duplicados
+          <select id="aggregation">
+            <option value="mean">Promedio</option>
+            <option value="median">Mediana</option>
+            <option value="first">Primer valor</option>
+            <option value="max">Máximo</option>
+            <option value="min">Mínimo</option>
+          </select>
+        </label>
+        <label>
+          Valores múltiples descriptivos
+          <select id="conflictMode">
+            <option value="join">Concatenar únicos</option>
+            <option value="varios">VARIOS</option>
+            <option value="first">Primer valor</option>
+          </select>
+        </label>
+      </div>
+
+      <label>
+        Nombre del análisis
+        <input id="analysisName" type="text" value="correlacion_fito_rendimiento" />
+      </label>
+    </section>
+
+    <section id="columnPanel" class="card hidden">
+      <div class="section-title">
+        <span>3</span>
+        <h2>Columnas dinámicas</h2>
+      </div>
+
+      <div class="column-block">
+        <h3>Columnas de grupo</h3>
+        <p class="hint">Estas columnas definen dónde se calcula cada correlación. Ejemplo: trial, híbrido, dosis.</p>
+        <div id="groupChips" class="chips"></div>
+      </div>
+
+      <div class="column-block">
+        <h3>Columnas de unidad experimental / emparejamiento</h3>
+        <p class="hint">Sirven para unir la fito y el rendimiento del mismo plot, repetición o unidad. Si no elegís ninguna, la app usa un modo automático.</p>
+        <div id="unitChips" class="chips"></div>
+      </div>
+
+      <div class="column-block">
+        <h3>Columnas descriptivas a conservar</h3>
+        <p class="hint">La app marca como sugeridas las columnas que parecen repetidas/constantes dentro de los grupos. Podés sumar o sacar cualquier columna.</p>
+        <div class="legend">
+          <span><b class="auto"></b> sugerida</span>
+          <span><b class="manual"></b> elegida manual</span>
+          <span><b class="plain"></b> disponible</span>
+        </div>
+        <div id="descChips" class="chips"></div>
+      </div>
+    </section>
+
+    <section id="runPanel" class="card hidden">
+      <div class="section-title">
+        <span>4</span>
+        <h2>Correr análisis</h2>
+      </div>
+      <div class="actions">
+        <button id="runBtn" class="primary large">Generar Excel</button>
+      </div>
+      <div id="progress" class="progress hidden"><div></div></div>
+      <div id="messages" class="messages"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
