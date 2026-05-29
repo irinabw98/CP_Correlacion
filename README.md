@@ -122,7 +122,7 @@ uvicorn app:app --host 0.0.0.0 --port $PORT
 Luego actualizar en `app.js`:
 
 ```js
-const API_BASE = "https://TU-BACKEND.onrender.com";
+const API_BASE = "https://cp-correlacion.onrender.com";
 ```
 
 ---

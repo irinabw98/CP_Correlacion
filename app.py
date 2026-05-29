@@ -10,7 +10,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from scipy import stats
 
 app = FastAPI(title="CP_CORRELACION", version="1.0.0")
 
@@ -114,18 +113,39 @@ def _unique_join(values: pd.Series, mode: str) -> Any:
     return " | ".join(sorted(vals))
 
 
+def _normal_cdf(z: float) -> float:
+    return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+
+
+def _approx_p_from_r(r: float, n: int) -> float:
+    """P-valor aproximado bilateral sin scipy.
+
+    Usa transformación z de Fisher. Es una aproximación práctica para evitar
+    compilar scipy en Render. Para n <= 3 no se informa p-valor confiable.
+    """
+    if n <= 3 or pd.isna(r) or abs(r) >= 1:
+        return np.nan
+    z = math.atanh(float(r)) * math.sqrt(n - 3)
+    return float(2.0 * (1.0 - _normal_cdf(abs(z))))
+
+
 def _corr(x: pd.Series, y: pd.Series, method: str) -> tuple[float, float, str | None]:
     clean = pd.DataFrame({"x": x, "y": y}).dropna()
-    if len(clean) < 2:
+    n = len(clean)
+    if n < 2:
         return np.nan, np.nan, "No hay pares suficientes."
     if clean["x"].nunique() < 2 or clean["y"].nunique() < 2:
         return np.nan, np.nan, "Una de las variables no tiene variabilidad dentro del grupo."
     try:
         if method == "spearman":
-            r, p = stats.spearmanr(clean["x"], clean["y"])
+            xr = clean["x"].rank(method="average")
+            yr = clean["y"].rank(method="average")
+            r = xr.corr(yr, method="pearson")
         else:
-            r, p = stats.pearsonr(clean["x"], clean["y"])
-        return float(r), float(p), None
+            r = clean["x"].corr(clean["y"], method="pearson")
+        p = _approx_p_from_r(float(r), n)
+        note = "p_value aproximado sin scipy" if not pd.isna(p) else "p_value no calculable con n <= 3 o correlación perfecta"
+        return float(r), float(p) if not pd.isna(p) else np.nan, note
     except Exception as exc:  # noqa: BLE001
         return np.nan, np.nan, str(exc)
 
