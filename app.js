@@ -1,6 +1,5 @@
 // Cambiar por la URL de Render cuando publiques el backend.
 const API_BASE = "https://cp-correlacion.onrender.com";
-// Para probar local: const API_BASE = "http://127.0.0.1:8000";
 
 let rows = [];
 let columns = [];
@@ -89,8 +88,10 @@ function guessDefaults() {
   selectedGroup = new Set();
   selectedUnit = new Set();
   selectedDesc = new Set();
+
   const groupHints = ["trial", "trial_mod", "hibrido", "hybrid", "dosis", "dose", "treatment", "treatment_name"];
   const unitHints = ["plot", "plot_id", "rep", "replicate", "replicate_number", "block", "bloque", "unidad", "sample_id"];
+
   columns.forEach(c => {
     const lc = c.toLowerCase();
     if (groupHints.some(h => lc === h || lc.includes(h))) selectedGroup.add(c);
@@ -107,6 +108,7 @@ function detectAutoDesc() {
   if (!group.length) return;
 
   const groups = new Map();
+
   rows.forEach(r => {
     const key = group.map(c => r[c] ?? "").join("|||~|||");
     if (!groups.has(key)) groups.set(key, []);
@@ -115,8 +117,10 @@ function detectAutoDesc() {
 
   columns.forEach(col => {
     if (reserved.has(col)) return;
+
     let constantCount = 0;
     let tested = 0;
+
     for (const groupRows of groups.values()) {
       const vals = new Set(groupRows.map(r => (r[col] ?? "").toString().trim()).filter(Boolean));
       if (vals.size > 0) {
@@ -124,6 +128,7 @@ function detectAutoDesc() {
         if (vals.size === 1) constantCount++;
       }
     }
+
     if (tested > 0 && constantCount / tested >= 0.85) autoDesc.add(col);
   });
 
@@ -146,18 +151,22 @@ function makeChip(col, type) {
   chip.type = "button";
   chip.className = "chip";
   chip.textContent = col;
+
   if (type === "group" && selectedGroup.has(col)) chip.classList.add("selected");
   if (type === "unit" && selectedUnit.has(col)) chip.classList.add("selected");
+
   if (type === "desc") {
     if (autoDesc.has(col)) chip.classList.add("auto");
     if (selectedDesc.has(col)) chip.classList.add("selected");
   }
+
   chip.addEventListener("click", () => {
     const target = type === "group" ? selectedGroup : type === "unit" ? selectedUnit : selectedDesc;
     if (target.has(col)) target.delete(col); else target.add(col);
     if (type === "group") detectAutoDesc();
     renderChips();
   });
+
   return chip;
 }
 
@@ -169,6 +178,7 @@ function renderChips() {
   const groupBox = $("groupChips");
   const unitBox = $("unitChips");
   const descBox = $("descChips");
+
   groupBox.innerHTML = "";
   unitBox.innerHTML = "";
   descBox.innerHTML = "";
@@ -176,9 +186,11 @@ function renderChips() {
   columns.forEach(col => {
     if (!reserved.has(col)) groupBox.appendChild(makeChip(col, "group"));
   });
+
   columns.forEach(col => {
     if (!reserved.has(col) && !selectedGroup.has(col)) unitBox.appendChild(makeChip(col, "unit"));
   });
+
   columns.forEach(col => {
     if (!reserved.has(col) && !selectedGroup.has(col) && !selectedUnit.has(col)) descBox.appendChild(makeChip(col, "desc"));
   });
@@ -208,23 +220,32 @@ function showMessage(text, type = "") {
   box.textContent = text;
 }
 
+function toggleInfo() {
+  $("infoPanel").classList.toggle("hidden");
+}
+
 $("parseBtn").addEventListener("click", () => {
   try {
     const parsed = parseTable($("dataInput").value);
     rows = parsed.parsed;
     columns = parsed.headers;
+
     const se = guessSeColumn();
     const value = guessValueColumn();
+
     fillSelect($("seCol"), columns, se);
     fillSelect($("valueCol"), columns, value);
+
     guessDefaults();
     refreshVariables();
     detectAutoDesc();
     renderPreview();
     renderChips();
+
     $("configPanel").classList.remove("hidden");
     $("columnPanel").classList.remove("hidden");
     $("runPanel").classList.remove("hidden");
+
     showMessage(`Detecté ${rows.length} filas y ${columns.length} columnas.`, "success");
   } catch (err) {
     showMessage(err.message, "error");
@@ -242,11 +263,27 @@ $("clearBtn").addEventListener("click", () => {
   showMessage("");
 });
 
-$("seCol").addEventListener("change", () => { refreshVariables(); detectAutoDesc(); renderChips(); });
-$("valueCol").addEventListener("change", () => { detectAutoDesc(); renderChips(); });
+$("infoBtn")?.addEventListener("click", toggleInfo);
+$("infoNavBtn")?.addEventListener("click", toggleInfo);
+
+$("dockTrigger")?.addEventListener("click", () => {
+  $("sideDock")?.classList.toggle("open");
+});
+
+$("seCol").addEventListener("change", () => {
+  refreshVariables();
+  detectAutoDesc();
+  renderChips();
+});
+
+$("valueCol").addEventListener("change", () => {
+  detectAutoDesc();
+  renderChips();
+});
 
 $("runBtn").addEventListener("click", async () => {
   if (!rows.length) return showMessage("Primero pegá y detectá una tabla.", "error");
+
   const payload = {
     rows,
     se_col: $("seCol").value,
@@ -277,18 +314,23 @@ $("runBtn").addEventListener("click", async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
       throw new Error(error.detail || "No se pudo generar el análisis.");
     }
+
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+
     a.href = url;
     a.download = `CP_CORRELACION_${payload.analysis_name}.xlsx`;
+
     document.body.appendChild(a);
     a.click();
     a.remove();
+
     URL.revokeObjectURL(url);
     showMessage("Excel generado correctamente.", "success");
   } catch (err) {
