@@ -3,20 +3,79 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CP_CORRELACION</title>
+  <title>Irina Labs | CP Correlación</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="lab-bg" aria-hidden="true">
+    <span>r</span>
+    <span>Σ</span>
+    <span>p</span>
+    <span>★</span>
+    <span>β</span>
+  </div>
+
+  <aside class="side-dock" id="sideDock" aria-label="Navegación Irina Labs">
+    <button class="dock-trigger" id="dockTrigger" type="button" aria-label="Abrir menú Irina Labs">☰</button>
+    <nav class="dock-panel">
+      <div class="dock-brand">
+        <span class="brand-orbit">✦</span>
+        <div>
+          <strong>Irina Labs</strong>
+          <small>suite experimental</small>
+        </div>
+      </div>
+      <a href="https://irinabw98.github.io/irinabottini/">Inicio</a>
+      <a href="https://irinabw98.github.io/CP_ANALISIS1/">CP Análisis</a>
+      <a href="https://irinabw98.github.io/CP_FACTORIAL/">CP Factorial</a>
+      <a class="active" href="https://irinabw98.github.io/CP_Correlacion/">CP Correlación</a>
+      <a href="https://irinabw98.github.io/EtiquetadorCP_2.0/">Etiquetador CP</a>
+      <button id="infoNavBtn" type="button">Información</button>
+    </nav>
+  </aside>
+
   <main class="app-shell">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Herramientas CP</p>
-        <h1>CP_CORRELACION</h1>
+    <section class="hero compact-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Irina Labs · análisis estadístico</p>
+        <h1>CP Correlación</h1>
         <p class="subtitle">Correlación dinámica entre variables definidas en <strong>se_name_mod</strong>, con agrupamientos, emparejamiento y Excel descargable.</p>
       </div>
-      <div class="status-card">
-        <span class="dot"></span>
-        <span id="apiStatus">Backend no verificado</span>
+      <div class="hero-tools">
+        <div class="lisa-vibe-card" aria-label="Detalle visual científico">
+          <span class="mini-board">y = f(x)</span>
+          <span class="mini-star">★</span>
+          <span class="mini-note">modo curiosidad</span>
+        </div>
+        <div class="status-card">
+          <span class="dot"></span>
+          <span id="apiStatus">Backend no verificado</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="infoPanel" class="card info-card hidden">
+      <div class="section-title">
+        <span>i</span>
+        <h2>Información del análisis</h2>
+      </div>
+      <div class="info-grid">
+        <article>
+          <h3>¿Para qué sirve?</h3>
+          <p>Esta herramienta ayuda a evaluar si dos variables se relacionan entre sí dentro de grupos definidos por tu tabla. Por ejemplo, podés analizar si la <strong>fitotoxicidad</strong> observada en un tratamiento se asocia con cambios posteriores en <strong>rendimiento</strong>.</p>
+        </article>
+        <article>
+          <h3>Pearson vs Spearman</h3>
+          <p><strong>Pearson</strong> mide asociación lineal entre dos variables numéricas. <strong>Spearman</strong> trabaja con rangos y suele ser útil cuando la relación no es perfectamente lineal o cuando hay valores extremos.</p>
+        </article>
+        <article>
+          <h3>Cómo interpretar r</h3>
+          <p>Un valor cercano a <strong>1</strong> indica relación positiva; cercano a <strong>-1</strong>, relación negativa; cercano a <strong>0</strong>, poca asociación. El <strong>p-value</strong> ayuda a evaluar si la asociación detectada es estadísticamente consistente.</p>
+        </article>
+        <article>
+          <h3>Cómo usarla</h3>
+          <p>Pegá tu tabla, elegí la columna de variable <code>se_name_mod</code>, la columna de valores, las dos variables a correlacionar y las columnas de grupo, como trial, híbrido o dosis.</p>
+        </article>
       </div>
     </section>
 
@@ -30,6 +89,7 @@
       <div class="actions">
         <button id="parseBtn" class="primary">Detectar columnas</button>
         <button id="clearBtn" class="ghost">Limpiar</button>
+        <button id="infoBtn" class="soft-yellow" type="button">Ver información</button>
       </div>
       <div id="dataPreview" class="preview"></div>
     </section>
@@ -137,6 +197,11 @@
       <div id="progress" class="progress hidden"><div></div></div>
       <div id="messages" class="messages"></div>
     </section>
+
+    <footer class="lab-footer">
+      <strong>Irina Labs</strong>
+      <span>Herramientas experimentales para análisis, datos y visualización.</span>
+    </footer>
   </main>
 
   <script src="app.js"></script>
